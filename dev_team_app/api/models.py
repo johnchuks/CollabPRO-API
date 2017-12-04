@@ -8,24 +8,28 @@ from django.dispatch import receiver
 
 # Create your models here.
 
-class UserProfile(models.Model):
-	user = models.OneToOneField(User, on_delete=models.CASCADE)
-	bio = models.TextField(max_length=500, blank=True)
-	position = models.CharField(max_length=200, blank=True)
-
-	# @receiver(post_save, sender=User)
-	# def create_user_profile(sender, instance, created, **kwargs):
-    # 		if created:
-    #     		UserProfile.objects.create(user=instance)
-
-	# @receiver(post_save, sender=User)
-	# def save_user_profile(sender, instance, **kwargs):
-    # 		user = instance
-	# 		if
 
 class SkillSet(models.Model):
-	title = models.CharField(max_length=200, blank=True)
-	profile = models.ManyToManyField(UserProfile)
+    title = models.CharField(max_length=200, blank=True)
 
-	def __str__(self):
-		return self.title
+    def __str__(self):
+        return self.title
+
+
+class UserProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    bio = models.TextField(max_length=500, blank=True)
+    position = models.CharField(max_length=200, blank=True)
+    skills = models.ManyToManyField(SkillSet)
+
+
+class Project(models.Model):
+    title = models.CharField(max_length=200, blank=False)
+    description = models.TextField(max_length=500, blank=False)
+    skills = models.ForeignKey(SkillSet)
+
+
+class Team(models.Model):
+    name = models.CharField(max_length=200, blank=False)
+    members = models.ManyToManyField(User)
+    project = models.ForeignKey(Project)
