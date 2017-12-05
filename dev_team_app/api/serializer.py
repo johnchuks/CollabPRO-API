@@ -39,8 +39,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         """ serializer method for creating user profile """
-        user = User.objects.get(pk=validated_data['user']['id'])
-        user_data = validated_data.pop('user')
+        user = User.objects.get(pk=validated_data['user']['id'])    
         skills = validated_data.pop('skills')
         profile = UserProfile.objects.create(user=user, **validated_data)
         profile.skills.add(*skills)
@@ -72,7 +71,9 @@ class ProjectSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         """ serializer method for creating a project """
-        return Project.objects.create(**validated_data)
+        author_details = validated_data.pop('author')
+        user = User.objects.get(pk=author_details.id)
+        return Project.objects.create(author=user, **validated_data)
 
     def update(self, instance, validated_data):
         """ serializer method for updating a project """
@@ -85,7 +86,7 @@ class ProjectSerializer(serializers.ModelSerializer):
     class Meta:
         """ Maps the project model to json """
         model = Project
-        fields = ('id', 'title', 'description', 'skills')
+        fields = ('id', 'title', 'description', 'skills', 'author')
 
 
 class TeamSerializer(serializers.ModelSerializer):

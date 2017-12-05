@@ -29,6 +29,15 @@ class CreateSkillSetView(generics.ListCreateAPIView):
 
 class CreateProjectView(APIView):
     """ create a new project and get projects"""
+
+    def existing_project(self, title):
+        """ Helper function for checking if project exist """
+        try:
+            Project.objects.get(title=title)
+            return True
+        except Project.DoesNotExist:
+            return False
+
     def get(self, request):
         """ Gets all projects """
         projects = Project.objects.all()
@@ -37,14 +46,27 @@ class CreateProjectView(APIView):
 
     def post(self, request):
         """ Creates a new project"""
-        serializer = ProjectSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        existing_project = self.existing_project(request.data['title'])
+        if not existing_project:
+            serializer = ProjectSerializer(data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(status=status.HTTP_409_CONFLICT)
+
+
 
 class CreateTeamView(APIView):
     """ creates a new team gets all teams """
+    def existing_team(self, name):
+        """ Helper function for checking if a team exist """
+        try:
+            Team.objects.get(name=name)
+            return True
+        except Team.DoesNotExist:
+            return False
+
     def get(self, request):
         """ gets all teams """
         teams = Team.objects.all()
@@ -53,11 +75,15 @@ class CreateTeamView(APIView):
 
     def post(self, request):
         """ creates a team """
-        serializer = TeamSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        existing_team = self.existing_team(request.data['name'])
+
+        if not existing_team:
+            serializer = TeamSerializer(data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(status=status.HTTP_409_CONFLICT)
 
 
 
