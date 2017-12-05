@@ -5,6 +5,7 @@ from .models import UserProfile, SkillSet, Project, Team
 
 class UserSerializer(serializers.ModelSerializer):
     """ Serializer to map user model to json format """
+    projects = serializers.PrimaryKeyRelatedField(many=True, queryset=Project.objects.all())
     class Meta:
         model = User
         fields = ('id', 'username', 'first_name',

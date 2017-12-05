@@ -15,18 +15,14 @@ class SkillSet(models.Model):
     def __str__(self):
         return self.title
 
-    def __unicode__(self):
-        return self.title
-
-
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     bio = models.TextField(max_length=500, blank=True)
     position = models.CharField(max_length=200, blank=True)
     skills = models.ManyToManyField(SkillSet)
 
-    def __unicode__(self):
-        return self.user
+    def __str__(self):
+        return self.user.username
 
 
 class Project(models.Model):
@@ -35,7 +31,7 @@ class Project(models.Model):
     skills = models.ForeignKey(SkillSet)
     author = models.ForeignKey(settings.AUTH_USER_MODEL, default=1)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.title
 
 
@@ -44,5 +40,5 @@ class Team(models.Model):
     members = models.ManyToManyField(User)
     project = models.ForeignKey(Project)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name
