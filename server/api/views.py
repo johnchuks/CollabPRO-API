@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 from rest_framework import generics
+from rest_framework import permissions
 from rest_framework.views import APIView
 from django.shortcuts import render
 from django.http import HttpResponse
 from django.contrib.auth.models import User
 from rest_framework import status
 from django.http import Http404
+from rest_framework_jwt.settings import api_settings
 from rest_framework.response import Response
 from .serializer import UserProfileSerializer, SkillSetSerializer
 from .serializer import UserSerializer,ProjectSerializer, TeamSerializer
@@ -14,9 +16,34 @@ from .models import UserProfile, SkillSet, Project, Team
 
 # Create your views here.
 
-class CreateUserView(generics.ListCreateAPIView):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
+class CreateUserView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def generate_auth_token(self, user):
+        """ Generate jwt token upon creation of user """
+        user_object = User.objects.get(pk=user['id'])
+        jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER
+        jwt_encode_handler = api_settings.JWT_ENCODE_HANDLER
+        payload = jwt_payload_handler(user_object)
+        token = jwt_encode_handler(payload)
+        return token
+
+    def post(self, request):
+        """ create a user """
+        serializer = UserSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            token = self.generate_auth_token(serializer.data)
+            response = {
+                'token': token,
+                'id': serializer.data['id'],
+                'username': serializer.data['username'],
+                'first_name': serializer.data['first_name'],
+                'last_name': serializer.data['last_name'],
+                'email': serializer.data['email']
+            }
+            return Response(response, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class CreateUserProfileView(generics.ListCreateAPIView):
