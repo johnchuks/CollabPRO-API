@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from .models import UserProfile, SkillSet, Project, Team
 
 
+
 class UserSerializer(serializers.ModelSerializer):
     """ Serializer to map user model to json format """
     # projects = serializers.PrimaryKeyRelatedField(many=True, queryset=Project.objects.all())
@@ -18,6 +19,15 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = ('id', 'username', 'first_name',
                   'last_name', 'email','password')
+
+class LoginSerializer(serializers.ModelSerializer):
+    """ serializer for handling login authentication """
+
+    class Meta: 
+        model = User
+        fields = ('id', 'username', 'first_name', 'last_name', 'email', 'password')
+
+
 
 
 class SkillSetSerializer(serializers.ModelSerializer):

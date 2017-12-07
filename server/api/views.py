@@ -8,32 +8,27 @@ from django.http import HttpResponse
 from django.contrib.auth.models import User
 from rest_framework import status
 from django.http import Http404
-from rest_framework_jwt.settings import api_settings
+from django.contrib.auth import authenticate
+from rest_framework.exceptions import ValidationError
+from rest_framework import exceptions
 from rest_framework.response import Response
 from .serializer import UserProfileSerializer, SkillSetSerializer
-from .serializer import UserSerializer,ProjectSerializer, TeamSerializer
+from .serializer import UserSerializer, ProjectSerializer, TeamSerializer, LoginSerializer
 from .models import UserProfile, SkillSet, Project, Team
+from api.utils.generate_jwt_token import generate_jwt_token
 
 # Create your views here.
 
+
 class CreateUserView(APIView):
     permission_classes = [permissions.AllowAny]
-
-    def generate_auth_token(self, user):
-        """ Generate jwt token upon creation of user """
-        user_object = User.objects.get(pk=user['id'])
-        jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER
-        jwt_encode_handler = api_settings.JWT_ENCODE_HANDLER
-        payload = jwt_payload_handler(user_object)
-        token = jwt_encode_handler(payload)
-        return token
 
     def post(self, request):
         """ create a user """
         serializer = UserSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            token = self.generate_auth_token(serializer.data)
+            token = generate_jwt_token(serializer.data)
             response = {
                 'token': token,
                 'id': serializer.data['id'],
@@ -46,13 +41,47 @@ class CreateUserView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+class LoginView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def validate_username_password(self, validated_data):
+        username = validated_data.get('username')
+        password = validated_data.get('password')
+
+        if username and password:
+            user = authenticate(username=username, password=password)
+        else:
+            msg = 'Must include an email and password to login'
+            raise exceptions.ValidationError(msg)
+        return user
+
+    def post(self, request):
+        """ Login a registered user """
+        authenticated_user = self.validate_username_password(request.data)
+        if authenticated_user:
+            serializer = LoginSerializer(authenticated_user)
+            token = generate_jwt_token(serializer.data)
+            response = {
+                'token': token,
+                'id': serializer.data['id'],
+                'username': serializer.data['username'],
+                'first_name': serializer.data['first_name'],
+                'last_name': serializer.data['last_name'],
+                'email': serializer.data['email']
+            }
+            return Response(response, status=status.HTTP_200_OK)
+        return Response({'error': 'Login failed'}, status=status.HTTP_401_UNAUTHORIZED)
+
+
 class CreateUserProfileView(generics.ListCreateAPIView):
-    queryset =  UserProfile.objects.all()
+    queryset = UserProfile.objects.all()
     serializer_class = UserProfileSerializer
+
 
 class CreateSkillSetView(generics.ListCreateAPIView):
     queryset = SkillSet.objects.all()
     serializer_class = SkillSetSerializer
+
 
 class CreateProjectView(APIView):
     """ create a new project and get projects"""
@@ -83,9 +112,9 @@ class CreateProjectView(APIView):
         return Response(status=status.HTTP_409_CONFLICT)
 
 
-
 class CreateTeamView(APIView):
     """ creates a new team gets all teams """
+
     def existing_team(self, name):
         """ Helper function for checking if a team exist """
         try:
@@ -113,14 +142,15 @@ class CreateTeamView(APIView):
         return Response(status=status.HTTP_409_CONFLICT)
 
 
-
 class UserProfileDetailsView(generics.RetrieveUpdateDestroyAPIView):
-    queryset =  UserProfile.objects.all()
+    queryset = UserProfile.objects.all()
     serializer_class = UserProfileSerializer
+
 
 class SkillSetDetailsView(generics.RetrieveUpdateDestroyAPIView):
     queryset = SkillSet.objects.all()
     serializer_class = SkillSetSerializer
+
 
 class ProjectDetailsView(APIView):
     """ Retrieve, update and delete a project """
@@ -153,8 +183,10 @@ class ProjectDetailsView(APIView):
         project.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+
 class TeamDetailsView(APIView):
     """ Retrieve, update, and delete a project """
+
     def get_team_by_id(self, pk):
         """ Helper function to get project based on the primary key"""
         try:
@@ -182,17 +214,3 @@ class TeamDetailsView(APIView):
         team = self.get_team_by_id(pk=pk)
         team.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
