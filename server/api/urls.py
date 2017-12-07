@@ -19,7 +19,8 @@ urlpatterns = [
     url(r'^project/(?P<pk>[0-9]+)/$',
         views.ProjectDetailsView.as_view(), name='Update, Get and Delete'),
     url(r'^team/(?P<pk>[0-9]+)/$',
-        views.TeamDetailsView.as_view(), name='Update, Get and Delete')
+        views.TeamDetailsView.as_view(), name='Update, Get and Delete'),
+    url(r'^home/$', views.DashboardView.as_view(), name="dashboard")
 
 ]
 

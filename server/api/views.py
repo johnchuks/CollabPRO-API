@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 from rest_framework import generics
 from rest_framework import permissions
 from rest_framework.views import APIView
+from django.views.generic.base import TemplateView
 from django.shortcuts import render
 from django.http import HttpResponse
 from django.contrib.auth.models import User
@@ -42,6 +43,7 @@ class CreateUserView(APIView):
 
 
 class LoginView(APIView):
+    """ Persist a username and password during login for authentication """
     permission_classes = [permissions.AllowAny]
 
     def validate_username_password(self, validated_data):
@@ -73,12 +75,18 @@ class LoginView(APIView):
         return Response({'error': 'Login failed'}, status=status.HTTP_401_UNAUTHORIZED)
 
 
+class DashboardView(TemplateView):
+    template_name = 'base.html'
+
+
 class CreateUserProfileView(generics.ListCreateAPIView):
+    """ creates a userprofile for an authenticated user """
     queryset = UserProfile.objects.all()
     serializer_class = UserProfileSerializer
 
 
 class CreateSkillSetView(generics.ListCreateAPIView):
+    """ creates a skillset for application """
     queryset = SkillSet.objects.all()
     serializer_class = SkillSetSerializer
 
@@ -143,11 +151,13 @@ class CreateTeamView(APIView):
 
 
 class UserProfileDetailsView(generics.RetrieveUpdateDestroyAPIView):
+    """ updates,deletes and get the profile of an existing user """
     queryset = UserProfile.objects.all()
     serializer_class = UserProfileSerializer
 
 
 class SkillSetDetailsView(generics.RetrieveUpdateDestroyAPIView):
+    """ updates, deletes and get a particular skill with primary key """
     queryset = SkillSet.objects.all()
     serializer_class = SkillSetSerializer
 
@@ -164,6 +174,7 @@ class ProjectDetailsView(APIView):
 
     def get(self, request, pk, format=None):
         """ Gets a project """
+        print(request.user, )
         project = self.get_project_by_id(pk)
         serializer = ProjectSerializer(project)
         return Response(serializer.data)

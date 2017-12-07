@@ -56,6 +56,7 @@ JWT_AUTH = {
 
 # Application definition
 INSTALLED_APPS = [
+    'webpack_loader',
     'api',
     'social_django',
     'rest_framework',
@@ -77,6 +78,13 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'api.middleware.authentication.jwt_authentication',
 ]
+
+WEBPACK_LOADER = {
+    'DEFAULT': {
+        'BUNDLE_DIR_NAME': '../../client/dist/',
+        'STATS_FILE': os.path.join(BASE_DIR, 'webpack-stats.json'),
+    }
+}
 
 ROOT_URLCONF = 'dev_team_app.urls'
 

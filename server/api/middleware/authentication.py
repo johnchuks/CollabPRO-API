@@ -12,8 +12,3 @@ def jwt_authentication(get_response):
             pass
         return get_response(request)
     return middleware
-
-     
-
-
-
