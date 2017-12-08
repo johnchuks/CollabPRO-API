@@ -5,10 +5,28 @@ from .models import UserProfile, SkillSet, Project, Team
 
 class UserSerializer(serializers.ModelSerializer):
     """ Serializer to map user model to json format """
+    # projects = serializers.PrimaryKeyRelatedField(many=True, queryset=Project.objects.all())
+
+    def create(self, validated_data):
+        """ Create user upon signup """
+        user = User.objects.create(**validated_data)
+        user.set_password(validated_data['password'])
+        user.save()
+        return user
+
     class Meta:
         model = User
         fields = ('id', 'username', 'first_name',
-                  'last_name', 'email', 'date_joined')
+                  'last_name', 'email', 'password')
+
+
+class LoginSerializer(serializers.ModelSerializer):
+    """ serializer for handling login authentication """
+
+    class Meta:
+        model = User
+        fields = ('id', 'username', 'first_name',
+                  'last_name', 'email', 'password')
 
 
 class SkillSetSerializer(serializers.ModelSerializer):
@@ -40,7 +58,6 @@ class UserProfileSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         """ serializer method for creating user profile """
         user = User.objects.get(pk=validated_data['user']['id'])
-        user_data = validated_data.pop('user')
         skills = validated_data.pop('skills')
         profile = UserProfile.objects.create(user=user, **validated_data)
         profile.skills.add(*skills)
@@ -72,12 +89,15 @@ class ProjectSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         """ serializer method for creating a project """
-        return Project.objects.create(**validated_data)
+        author_details = validated_data.pop('author')
+        user = User.objects.get(pk=author_details.id)
+        return Project.objects.create(author=user, **validated_data)
 
     def update(self, instance, validated_data):
         """ serializer method for updating a project """
         instance.title = validated_data.get('title', instance.title)
-        instance.description = validated_data.get('description', instance.description)
+        instance.description = validated_data.get(
+            'description', instance.description)
         instance.skills = validated_data.get('skills', instance.skills)
         instance.save()
         return instance
@@ -85,7 +105,7 @@ class ProjectSerializer(serializers.ModelSerializer):
     class Meta:
         """ Maps the project model to json """
         model = Project
-        fields = ('id', 'title', 'description', 'skills')
+        fields = ('id', 'title', 'description', 'skills', 'author')
 
 
 class TeamSerializer(serializers.ModelSerializer):
