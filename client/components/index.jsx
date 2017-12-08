@@ -1,5 +1,6 @@
-import React from 'react'
-import ReactDOM from 'react'
+import React from 'react';
+import ReactDOM from 'react-dom';
+import Signup from './authentication/Signup.jsx';
 
 
 function Welcome(props) {
@@ -8,6 +9,6 @@ function Welcome(props) {
 
 const element = <Welcome name="world" />;
 ReactDOM.render(
-  element,
+  <Signup />,
   document.getElementById('app')
 );

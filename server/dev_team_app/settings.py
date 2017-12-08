@@ -25,7 +25,6 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 from os.path import join, dirname
 from dotenv import load_dotenv, find_dotenv
 
-# dotenv_path = join(dirname(__file__), '.env')
 load_dotenv(find_dotenv())
 
 # SECURITY WARNING: keep the secret key used in production secret!
@@ -49,8 +48,8 @@ REST_FRAMEWORK = {
 }
 
 JWT_AUTH = {
-    'JWT_EXPIRATION_DELTA':timedelta(days=1),
-    'JWT_ALLOW_REFRESH':True,
+    'JWT_EXPIRATION_DELTA': timedelta(days=1),
+    'JWT_ALLOW_REFRESH': True,
     'JWT_REFRESH_EXPIRATION_DELTA': timedelta(days=3)
 }
 
@@ -81,8 +80,11 @@ MIDDLEWARE = [
 
 WEBPACK_LOADER = {
     'DEFAULT': {
-        'BUNDLE_DIR_NAME': '../../client/dist/',
+        'BUNDLE_DIR_NAME': 'webpack_bundles/',
         'STATS_FILE': os.path.join(BASE_DIR, 'webpack-stats.json'),
+        'POLL_INTERVAL': 0.1,
+        'TIMEOUT': None,
+        'IGNORE': ['.+\.hot-update.js', '.+\.map']
     }
 }
 
@@ -162,5 +164,11 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
-
 STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+ROOT_DIR = os.path.dirname(BASE_DIR)
+
+STATICFILES_DIRS = (
+    # This lets Django's collectstatic store our bundles
+    os.path.join(ROOT_DIR, 'assets'),
+)

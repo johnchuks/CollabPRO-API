@@ -5,6 +5,7 @@ from rest_framework import permissions
 from rest_framework.views import APIView
 from django.views.generic.base import TemplateView
 from django.shortcuts import render
+from django.template.loader import get_template
 from django.http import HttpResponse
 from django.contrib.auth.models import User
 from rest_framework import status
@@ -77,7 +78,9 @@ class LoginView(APIView):
 
 class DashboardView(TemplateView):
     template_name = 'base.html'
-
+    def get(self, request):
+        template = get_template('base.html')
+        return HttpResponse(template.render())
 
 class CreateUserProfileView(generics.ListCreateAPIView):
     """ creates a userprofile for an authenticated user """

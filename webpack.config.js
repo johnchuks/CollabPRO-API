@@ -5,7 +5,7 @@ const BundleTracker = require('webpack-bundle-tracker');
 require('dotenv').config();
 
 module.exports = {
-  context: path.join(__dirname, 'client'),
+  context: path.join(__dirname, 'dist'),
   devtool: 'source-map',
   entry: '../client/components/index.jsx',
   module: {
@@ -26,9 +26,8 @@ module.exports = {
     dns: 'empty'
   },
   output: {
-    path: `${__dirname}/client/dist`,
-    filename: 'bundle.js',
-    publicPath: '/'
+    path: path.resolve('./assets/webpack_bundles/'),
+    filename: '[name]-[hash].js',
   },
   plugins: [
     new webpack.NoEmitOnErrorsPlugin(),

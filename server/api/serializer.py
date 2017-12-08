@@ -3,7 +3,6 @@ from django.contrib.auth.models import User
 from .models import UserProfile, SkillSet, Project, Team
 
 
-
 class UserSerializer(serializers.ModelSerializer):
     """ Serializer to map user model to json format """
     # projects = serializers.PrimaryKeyRelatedField(many=True, queryset=Project.objects.all())
@@ -18,16 +17,16 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('id', 'username', 'first_name',
-                  'last_name', 'email','password')
+                  'last_name', 'email', 'password')
+
 
 class LoginSerializer(serializers.ModelSerializer):
     """ serializer for handling login authentication """
 
-    class Meta: 
+    class Meta:
         model = User
-        fields = ('id', 'username', 'first_name', 'last_name', 'email', 'password')
-
-
+        fields = ('id', 'username', 'first_name',
+                  'last_name', 'email', 'password')
 
 
 class SkillSetSerializer(serializers.ModelSerializer):
@@ -58,7 +57,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         """ serializer method for creating user profile """
-        user = User.objects.get(pk=validated_data['user']['id'])    
+        user = User.objects.get(pk=validated_data['user']['id'])
         skills = validated_data.pop('skills')
         profile = UserProfile.objects.create(user=user, **validated_data)
         profile.skills.add(*skills)
@@ -97,7 +96,8 @@ class ProjectSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         """ serializer method for updating a project """
         instance.title = validated_data.get('title', instance.title)
-        instance.description = validated_data.get('description', instance.description)
+        instance.description = validated_data.get(
+            'description', instance.description)
         instance.skills = validated_data.get('skills', instance.skills)
         instance.save()
         return instance
