@@ -177,7 +177,6 @@ class ProjectDetailsView(APIView):
 
     def get(self, request, pk, format=None):
         """ Gets a project """
-        print(request.user, )
         project = self.get_project_by_id(pk)
         serializer = ProjectSerializer(project)
         return Response(serializer.data)

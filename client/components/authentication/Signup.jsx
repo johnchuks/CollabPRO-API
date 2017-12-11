@@ -16,7 +16,10 @@ export default class Signup extends Component {
     render() {
         return(
             <div>
-            <h2> Welcome to React!!!!!!</h2>
+                <h2> Signup page for collabpro </h2>
+                <form>
+                    <input name="firstname" placeholder="firstname" type="text" />
+                    </form>
             </div>
         )
        
