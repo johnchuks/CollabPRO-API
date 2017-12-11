@@ -6,8 +6,8 @@ from rest_framework_jwt.views import obtain_jwt_token
 
 urlpatterns = [
     url(r'^auth/token/$', obtain_jwt_token),
-    url(r'^user/$', views.CreateUserView.as_view(), name="Create User"),
-    url(r'^login/$', views.LoginView.as_view(), name="Login User"),
+    url(r'^user/$', views.CreateUserView.as_view(), name="create_user"),
+    url(r'^login/$', views.LoginView.as_view(), name="login_user"),
     url(r'^profile/$', views.CreateUserProfileView.as_view(), name="Create Skill"),
     url(r'^skill/$', views.CreateSkillSetView.as_view(), name="Create Skill"),
     url(r'^project/$', views.CreateProjectView.as_view(), name="Create Project"),
