@@ -56,7 +56,6 @@ JWT_AUTH = {
 
 # Application definition
 INSTALLED_APPS = [
-    'webpack_loader',
     'api',
     'social_django',
     'rest_framework',
@@ -169,7 +168,7 @@ STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 ROOT_DIR = os.path.dirname(BASE_DIR)
 
-STATICFILES_DIRS = (
-    # This lets Django's collectstatic store our bundles
-    os.path.join(ROOT_DIR, 'assets'),
-)
+# STATICFILES_DIRS = (
+#     # This lets Django's collectstatic store our bundles
+#     os.path.join(ROOT_DIR, 'assets'),
+# )
