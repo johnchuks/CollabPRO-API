@@ -6,20 +6,20 @@ from rest_framework_jwt.views import obtain_jwt_token
 
 urlpatterns = [
     url(r'^auth/token/$', obtain_jwt_token),
-    url(r'^user/$', views.CreateUserView.as_view(), name="Create User"),
-    url(r'^login/$', views.LoginView.as_view(), name="Login User"),
-    url(r'^profile/$', views.CreateUserProfileView.as_view(), name="Create Skill"),
-    url(r'^skill/$', views.CreateSkillSetView.as_view(), name="Create Skill"),
-    url(r'^project/$', views.CreateProjectView.as_view(), name="Create Project"),
-    url(r'^team/$', views.CreateTeamView.as_view(), name="Create Team"),
+    url(r'^user/$', views.CreateUserView.as_view(), name="create_user"),
+    url(r'^login/$', views.LoginView.as_view(), name="login_user"),
+    url(r'^profile/$', views.CreateUserProfileView.as_view(), name="create_userprofile"),
+    url(r'^skill/$', views.CreateSkillSetView.as_view(), name="create_skill"),
+    url(r'^project/$', views.CreateProjectView.as_view(), name="create_project"),
+    url(r'^team/$', views.CreateTeamView.as_view(), name="create_team"),
     url(r'^profile/(?P<pk>[0-9]+)/$',
-        views.UserProfileDetailsView.as_view(), name="Update, Get, Delete"),
+        views.UserProfileDetailsView.as_view(), name="update_get_delete_userprofile"),
     url(r'^skill/(?P<pk>[0-9]+)/$',
-        views.SkillSetDetailsView.as_view(), name="Get"),
+        views.SkillSetDetailsView.as_view(), name="update_get_delete_skill"),
     url(r'^project/(?P<pk>[0-9]+)/$',
-        views.ProjectDetailsView.as_view(), name='Update, Get and Delete'),
+        views.ProjectDetailsView.as_view(), name='update_get_delete_project'),
     url(r'^team/(?P<pk>[0-9]+)/$',
-        views.TeamDetailsView.as_view(), name='Update, Get and Delete')
+        views.TeamDetailsView.as_view(), name='update_get_delete_team')
 
 ]
 

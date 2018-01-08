@@ -57,7 +57,8 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         """ serializer method for creating user profile """
-        user = User.objects.get(pk=validated_data['user']['id'])
+        user_id = validated_data.pop('user')
+        user = User.objects.get(pk=user_id['id'])
         skills = validated_data.pop('skills')
         profile = UserProfile.objects.create(user=user, **validated_data)
         profile.skills.add(*skills)

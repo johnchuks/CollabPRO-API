@@ -113,6 +113,8 @@ class CreateProjectView(APIView):
 
     def post(self, request):
         """ Creates a new project"""
+        if not request.data['title']:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
         existing_project = self.existing_project(request.data['title'])
         if not existing_project:
             serializer = ProjectSerializer(data=request.data)
@@ -177,7 +179,6 @@ class ProjectDetailsView(APIView):
 
     def get(self, request, pk, format=None):
         """ Gets a project """
-        print(request.user, )
         project = self.get_project_by_id(pk)
         serializer = ProjectSerializer(project)
         return Response(serializer.data)
