@@ -22,5 +22,4 @@ urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^api/', include('api.urls')),
     url(r'^api/social/', include('social_django.urls', namespace='social')),
-    url(r'^', views.DashboardView.as_view(), name="home")
 ]

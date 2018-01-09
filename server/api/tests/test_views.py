@@ -295,7 +295,7 @@ class CreateProjectView(APITestCase):
         self.project_payload = {
             "title": "NPM for blockchain",
             "description": "Create NPM module for blockchain",
-            "skills": self.skills.id,
+            "skills": [self.skills.id],
             "author": self.created_user.data['id']
         }
         self.invalid_project_payload = {
@@ -347,7 +347,7 @@ class GetProjectView(APITestCase):
         self.project_payload = {
             "title": "NPM for blockchain",
             "description": "Create NPM module for blockchain",
-            "skills": self.skills.id,
+            "skills": [self.skills.id],
             "author": self.created_user.data['id']
         }
         self.auth = self.client.credentials(HTTP_AUTHORIZATION='JWT {}'.format(
@@ -355,6 +355,8 @@ class GetProjectView(APITestCase):
         url = reverse('create_project')
         self.new_project = self.client.post(url, data=json.dumps(
             self.project_payload), content_type="application/json")
+        
+        self.invalid_project_id = 2
 
     def test_get_project_by_id(self):
         project_url = reverse('update_get_delete_project', kwargs={
@@ -365,9 +367,81 @@ class GetProjectView(APITestCase):
         serializer = ProjectSerializer(project)
         self.assertEqual(response.data, serializer.data)
         self.assertEqual(response.status_code, 200)
+    
+    def test_no_existing_project(self):
+        project_url = reverse('update_get_delete_project', kwargs={
+            'pk': self.invalid_project_id
+        })
+        response = self.client.get(project_url)
+        self.assertEqual(response.status_code, 404)
 
-    class UpdateProjectView(APITestCase):
 
+
+class UpdateProjectView(APITestCase):
+
+    def setUp(self):
+        self.user_credentials = dict(
+            username="johnchuks21",
+            first_name="john",
+            last_name="ohia",
+            email="johnc@gmail.com",
+            password="kibana"
+        )
+
+        self.created_user = create_user(self.user_credentials)
+        self.skills_payload = {
+                "title": "javascript"
+        }
+        self.skills = SkillSet.objects.create(**self.skills_payload)
+        self.project_payload = {
+            "title": "NPM for blockchain",
+            "description": "Create NPM module for blockchain",
+            "skills": [self.skills.id],
+            "author": self.created_user.data['id']
+        }
+        self.auth = self.client.credentials(HTTP_AUTHORIZATION='JWT {}'.format(
+                    self.created_user.data['token']))
+        url = reverse('create_project')
+        self.new_project = self.client.post(url, data=json.dumps(
+                self.project_payload), content_type="application/json")
+
+        self.update_project_payload = {
+            "title": "blockchain with javascript",
+            "description": "Tutorial for implementing blockchain",
+            "skills": [self.skills.id]
+        }
+        self.invalid_project_id = 2
+
+    def test_update_project_by_id(self):
+        project_url = reverse('update_get_delete_project', kwargs={
+                'pk': self.new_project.data['id']
+            })
+        response = self.client.put(project_url, data=json.dumps(self.update_project_payload),
+                                       content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['title'], "blockchain with javascript")
+    
+    def test_invalid_update_project_by_id(self):
+        project_url = reverse('update_get_delete_project', kwargs={
+                'pk': self.invalid_project_id
+            })
+        response = self.client.put(project_url, data=json.dumps(self.update_project_payload),
+                                       content_type='application/json')
+        self.assertEqual(response.status_code, 404)
+
+    def test_update_project_by_not_author(self):
+        self.client.credentials(HTTP_AUTHORIZATION='JWT eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoyNCwidXNlcm5hbWUiOiJtZXNhIiwiZXhwIjoxNTE1NTc4NDI3LCJlbWFpbCI6Im1lc3NpQGVtYWlsLmNvbSIsIm9yaWdfaWF0IjoxNTE1NDkyMDI3fQ.BFA4VHecQfAB6ZzUhlVjqj1ozG6pD2w3cklyG-gLWxE')
+        project_url = reverse('update_get_delete_project', kwargs={
+            'pk': self.new_project.data['id']
+        })
+        response = self.client.put(project_url, data=json.dumps(self.update_project_payload),
+                                    content_type='application/json')
+        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.data['detail'], 'Invalid signature.')
+
+    
+    class DeleteProjectView(APITestCase):
+        
         def setUp(self):
             self.user_credentials = dict(
                 username="johnchuks21",
@@ -380,29 +454,21 @@ class GetProjectView(APITestCase):
             self.created_user = create_user(self.user_credentials)
             self.skills_payload = {
                 "title": "javascript"
-            }
+        }
             self.skills = SkillSet.objects.create(**self.skills_payload)
             self.project_payload = {
                 "title": "NPM for blockchain",
                 "description": "Create NPM module for blockchain",
-                "skills": self.skills.id,
+                "skills": [self.skills.id],
                 "author": self.created_user.data['id']
             }
             self.auth = self.client.credentials(HTTP_AUTHORIZATION='JWT {}'.format(
-                self.created_user.data['token']))
+                        self.created_user.data['token']))
             url = reverse('create_project')
             self.new_project = self.client.post(url, data=json.dumps(
-                self.project_payload), content_type="application/json")
+                                self.project_payload), content_type="application/json")
 
-            self.update_project = {
-                "title": "blockhain with javascript",
-                "description": "Tutorial for implementing blockchain"
-            }
 
-        def test_update_project_by_id(self):
-            project_url = reverse('update_get_delete_project', kwargs={
-                'pk': self.new_project.data['id']
-            })
-            response = self.client.put(project_url, data=json.dumps(self.update_project),
-            content_type='application/json')
-            print(response.data)
+
+       
+

@@ -87,12 +87,21 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
 class ProjectSerializer(serializers.ModelSerializer):
     """ Serializer maps the project model into a json format """
+    id = serializers.IntegerField(read_only=True)
+    title = serializers.CharField(required=False, allow_blank=True)
+    description = serializers.CharField(required=False, allow_blank=True)
+    skills = serializers.PrimaryKeyRelatedField(many=True,required=False, queryset=SkillSet.objects.all())
+    author = serializers.PrimaryKeyRelatedField(required=False, queryset=User.objects.all())
+
 
     def create(self, validated_data):
         """ serializer method for creating a project """
         author_details = validated_data.pop('author')
         user = User.objects.get(pk=author_details.id)
-        return Project.objects.create(author=user, **validated_data)
+        skills = validated_data.pop('skills') 
+        project = Project.objects.create(author=user, **validated_data)
+        project.skills.add(*skills)
+        return project
 
     def update(self, instance, validated_data):
         """ serializer method for updating a project """
