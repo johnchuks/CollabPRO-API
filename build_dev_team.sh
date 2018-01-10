@@ -2,7 +2,7 @@
 
 set -e # stops execution on error
 rm -rf server/api/migrations
-python manage.py schemamigration api --initial
-python manage.py syncdb --noinput
-python manage.py migrate api
-python manage.py test
+python server/manage.py schemamigration api --initial
+python server/manage.py syncdb --noinput
+python server/manage.py migrate api
+python server/manage.py test
