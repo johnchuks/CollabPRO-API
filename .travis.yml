@@ -10,6 +10,7 @@ before_install:
   - export DJANGO_SETTINGS_MODULE=dev_team_app.settings
   - export PYTHONPATH=$HOME/builds/johnchuks/collabPRO-API
   - export PIP_USE_MIRRORS=true
+  - export BUILD_ON_TRAVIS=true
 install:
   - pip install -r requirements.txt
   - pip install django==$DJANGO --quiet

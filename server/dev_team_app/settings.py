@@ -79,15 +79,6 @@ MIDDLEWARE = [
 
 ]
 
-WEBPACK_LOADER = {
-    'DEFAULT': {
-        'BUNDLE_DIR_NAME': 'webpack_bundles/',
-        'STATS_FILE': os.path.join(BASE_DIR, 'webpack-stats.json'),
-        'POLL_INTERVAL': 0.1,
-        'TIMEOUT': None,
-        'IGNORE': ['.+\.hot-update.js', '.+\.map']
-    }
-}
 
 ROOT_URLCONF = 'dev_team_app.urls'
 
@@ -119,17 +110,11 @@ WSGI_APPLICATION = 'dev_team_app.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.environ.get('DBDEV'),
-        'USER': os.environ.get('DBUSER'),
-        'HOST': '127.0.0.1',
-        'PORT': os.environ.get('DBPORT')
-    }
-}
+if os.environ.get('BUILD_ON_TRAVIS', None):
+    SECRET_KEY = "SecretKeyForUseOnTravis"
+    DEBUG = False
+    TEMPLATE_DEBUG = True
 
-if 'TRAVIS' in os.environ:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
@@ -138,6 +123,16 @@ if 'TRAVIS' in os.environ:
             'PASSWORD': '',
             'HOST': '127.0.0.1',
             'PORT': ''
+        }
+    }
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.environ.get('DBDEV'),
+            'USER': os.environ.get('DBUSER'),
+            'HOST': '127.0.0.1',
+            'PORT': os.environ.get('DBPORT')
         }
     }
 
