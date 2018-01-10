@@ -20,7 +20,7 @@ before_script:
   - psql -c "CREATE DATABASE travisdb;" -U postgres
 
 script:
-  - python manage.py test
+  - python server/manage.py test
 
 
 
