@@ -118,7 +118,7 @@ if os.environ.get('BUILD_ON_TRAVIS', None):
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
-            'NAME': 'travisci',
+            'NAME': 'travisdb',
             'USER': 'postgres',
             'PASSWORD': '',
             'HOST': '127.0.0.1',
