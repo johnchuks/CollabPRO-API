@@ -7,7 +7,7 @@ services: postgresql
 env:
   - DJANGO=1.11.7
 before_install:
-  - export DJANGO_SETTINGS_MODULE = dev_team_app.settings
+  - export DJANGO_SETTINGS_MODULE=dev_team_app.settings
   - export PYTHONPATH=$HOME/builds/johnchuks/collabPRO-API
   - export PIP_USE_MIRRORS=true
 install:
