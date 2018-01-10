@@ -28,7 +28,7 @@ class UserProfile(models.Model):
 class Project(models.Model):
     title = models.CharField(max_length=200, blank=False)
     description = models.TextField(max_length=500, blank=False)
-    skills = models.ForeignKey(SkillSet)
+    skills = models.ManyToManyField(SkillSet)
     author = models.ForeignKey(settings.AUTH_USER_MODEL, default=1)
 
     def __str__(self):

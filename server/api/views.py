@@ -18,6 +18,7 @@ from .serializer import UserProfileSerializer, SkillSetSerializer
 from .serializer import UserSerializer, ProjectSerializer, TeamSerializer, LoginSerializer
 from .models import UserProfile, SkillSet, Project, Team
 from api.utils.generate_jwt_token import generate_jwt_token
+from api.utils.service import check_auth_user_credentials
 
 # Create your views here.
 
@@ -76,11 +77,6 @@ class LoginView(APIView):
         return Response({'error': 'Login failed'}, status=status.HTTP_401_UNAUTHORIZED)
 
 
-class DashboardView(TemplateView):
-    template_name = 'base.html'
-    def get(self, request):
-        template = get_template('base.html')
-        return HttpResponse(template.render())
 
 class CreateUserProfileView(generics.ListCreateAPIView):
     """ creates a userprofile for an authenticated user """
@@ -180,12 +176,25 @@ class ProjectDetailsView(APIView):
     def get(self, request, pk, format=None):
         """ Gets a project """
         project = self.get_project_by_id(pk)
+        credential_check = check_auth_user_credentials(request.user.id, project.author.id)
+        if not credential_check:
+            response_object = dict(message="You are not authorized to access the content")
+            return Response(response_object, status=status.HTTP_403_FORBIDDEN)
+        if not project:
+            return Response(status=status.HTTP_404_NOT_FOUND)
         serializer = ProjectSerializer(project)
         return Response(serializer.data)
 
     def put(self, request, pk, format=None):
         """ Updates a project """
+        
         project = self.get_project_by_id(pk)
+        credential_check = check_auth_user_credentials(
+            request.user.id, project.author.id
+            )
+        if not credential_check:
+            response_object = dict(message="You are not authorized to access the content")
+            return Response(response_object, status=status.HTTP_403_FORBIDDEN)
         serializer = ProjectSerializer(project, data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -195,6 +204,14 @@ class ProjectDetailsView(APIView):
     def delete(self, request, pk, format=None):
         """ Deletes a project """
         project = self.get_project_by_id(pk=pk)
+        credential_check = check_auth_user_credentials(
+            request.user.id, project.author.id
+        )
+        if not credential_check:
+            response_object = dict(message="You are not authorized to delete this content")
+            return Response(response_object, status.HTTP_403_FORBIDDEN)
+        if not project:
+            return Response(status=status.HTTP_404_NOT_FOUND)
         project.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -222,7 +239,7 @@ class TeamDetailsView(APIView):
         if team_serializer.is_valid():
             team_serializer.save()
             return Response(team_serializer.data)
-        return Response(team_serializer.error, status=status.HTTP_400_BAD_REQUEST)
+        return Response(team_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, pk, format=None):
         """ delete a team by id """

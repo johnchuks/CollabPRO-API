@@ -260,6 +260,9 @@ class GetUserProfile(APITestCase):
                                                        self.create_profile['profile']),
                                                    content_type="application/json"
                                                    )
+        self.invalid_profile = {
+            'id': 343
+        }
 
     def test_get_userprofile(self):
         """ Ensures a user profile is got by its primary key """
@@ -274,6 +277,53 @@ class GetUserProfile(APITestCase):
         serializer = UserProfileSerializer(profile)
         self.assertEqual(response.data, serializer.data)
         self.assertEqual(response.status_code, 200)
+
+    def test_no_existing_userprofile(self):
+        profile_url = reverse('update_get_delete_userprofile', kwargs={
+            'pk': self.invalid_profile['id']
+        })
+        response = self.client.get(profile_url)
+        self.assertEqual(response.status_code, 404)
+
+
+class DeleteUserProfile(APITestCase):
+
+    def setUp(self):
+        self.user_payload = dict(
+            username="johnchuks21",
+            first_name="john",
+            last_name="ohia",
+            email="johnc@gmail.com",
+            password="kibana"
+        )
+        self.skills_payload = {
+            "title": "Javascript"
+        }
+        self.profile_payload = dict(
+            bio="I am a devops engineer with over seven years experience",
+            position="senior devops engineer"
+        )
+
+        self.create_profile = create_user_profile(
+            self.user_payload,
+            self.skills_payload,
+            self.profile_payload
+        )
+        self.client.credentials(HTTP_AUTHORIZATION='JWT {}'.format(
+            self.create_profile['token']))
+        url_profile = reverse('create_userprofile')
+        self.create_userprofile = self.client.post(url_profile,
+                                                   data=json.dumps(
+                                                       self.create_profile['profile']),
+                                                   content_type="application/json"
+                                                   )
+
+    def test_delete_userprofile(self):
+        profile_url = reverse('update_get_delete_userprofile', kwargs={
+            'pk': self.create_userprofile.data['id']
+        })
+        response = self.client.delete(profile_url)
+        self.assertEqual(response.status_code, 204)
 
 
 class CreateProjectView(APITestCase):
@@ -295,7 +345,7 @@ class CreateProjectView(APITestCase):
         self.project_payload = {
             "title": "NPM for blockchain",
             "description": "Create NPM module for blockchain",
-            "skills": self.skills.id,
+            "skills": [self.skills.id],
             "author": self.created_user.data['id']
         }
         self.invalid_project_payload = {
@@ -347,7 +397,7 @@ class GetProjectView(APITestCase):
         self.project_payload = {
             "title": "NPM for blockchain",
             "description": "Create NPM module for blockchain",
-            "skills": self.skills.id,
+            "skills": [self.skills.id],
             "author": self.created_user.data['id']
         }
         self.auth = self.client.credentials(HTTP_AUTHORIZATION='JWT {}'.format(
@@ -355,6 +405,8 @@ class GetProjectView(APITestCase):
         url = reverse('create_project')
         self.new_project = self.client.post(url, data=json.dumps(
             self.project_payload), content_type="application/json")
+
+        self.invalid_project_id = 2
 
     def test_get_project_by_id(self):
         project_url = reverse('update_get_delete_project', kwargs={
@@ -366,43 +418,224 @@ class GetProjectView(APITestCase):
         self.assertEqual(response.data, serializer.data)
         self.assertEqual(response.status_code, 200)
 
-    class UpdateProjectView(APITestCase):
+    def test_no_existing_project(self):
+        project_url = reverse('update_get_delete_project', kwargs={
+            'pk': self.invalid_project_id
+        })
+        response = self.client.get(project_url)
+        self.assertEqual(response.status_code, 404)
 
-        def setUp(self):
-            self.user_credentials = dict(
-                username="johnchuks21",
-                first_name="john",
-                last_name="ohia",
-                email="johnc@gmail.com",
-                password="kibana"
-            )
 
-            self.created_user = create_user(self.user_credentials)
-            self.skills_payload = {
-                "title": "javascript"
-            }
-            self.skills = SkillSet.objects.create(**self.skills_payload)
-            self.project_payload = {
-                "title": "NPM for blockchain",
-                "description": "Create NPM module for blockchain",
-                "skills": self.skills.id,
-                "author": self.created_user.data['id']
-            }
-            self.auth = self.client.credentials(HTTP_AUTHORIZATION='JWT {}'.format(
-                self.created_user.data['token']))
-            url = reverse('create_project')
-            self.new_project = self.client.post(url, data=json.dumps(
-                self.project_payload), content_type="application/json")
+class UpdateProjectView(APITestCase):
 
-            self.update_project = {
-                "title": "blockhain with javascript",
-                "description": "Tutorial for implementing blockchain"
-            }
+    def setUp(self):
+        self.user_credentials = dict(
+            username="johnchuks21",
+            first_name="john",
+            last_name="ohia",
+            email="johnc@gmail.com",
+            password="kibana"
+        )
 
-        def test_update_project_by_id(self):
-            project_url = reverse('update_get_delete_project', kwargs={
-                'pk': self.new_project.data['id']
-            })
-            response = self.client.put(project_url, data=json.dumps(self.update_project),
-            content_type='application/json')
-            print(response.data)
+        self.created_user = create_user(self.user_credentials)
+        self.skills_payload = {
+            "title": "javascript"
+        }
+        self.skills = SkillSet.objects.create(**self.skills_payload)
+        self.project_payload = {
+            "title": "NPM for blockchain",
+            "description": "Create NPM module for blockchain",
+            "skills": [self.skills.id],
+            "author": self.created_user.data['id']
+        }
+        self.auth = self.client.credentials(HTTP_AUTHORIZATION='JWT {}'.format(
+            self.created_user.data['token']))
+        url = reverse('create_project')
+        self.new_project = self.client.post(url, data=json.dumps(
+            self.project_payload), content_type="application/json")
+
+        self.update_project_payload = {
+            "title": "blockchain with javascript",
+            "description": "Tutorial for implementing blockchain",
+            "skills": [self.skills.id]
+        }
+        self.invalid_project_id = 2
+
+    def test_update_project_by_id(self):
+        project_url = reverse('update_get_delete_project', kwargs={
+            'pk': self.new_project.data['id']
+        })
+        response = self.client.put(project_url, data=json.dumps(self.update_project_payload),
+                                   content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['title'], "blockchain with javascript")
+
+    def test_invalid_update_project_by_id(self):
+        project_url = reverse('update_get_delete_project', kwargs={
+            'pk': self.invalid_project_id
+        })
+        response = self.client.put(project_url, data=json.dumps(self.update_project_payload),
+                                   content_type='application/json')
+        self.assertEqual(response.status_code, 404)
+
+
+class DeleteProjectView(APITestCase):
+
+    def setUp(self):
+        self.user_credentials = dict(
+            username="johnchuks21",
+            first_name="john",
+            last_name="ohia",
+            email="johnc@gmail.com",
+            password="kibana"
+        )
+
+        self.created_user = create_user(self.user_credentials)
+        self.skills_payload = {
+            "title": "javascript"
+        }
+        self.skills = SkillSet.objects.create(**self.skills_payload)
+        self.project_payload = {
+            "title": "NPM for blockchain",
+            "description": "Create NPM module for blockchain",
+            "skills": [self.skills.id],
+            "author": self.created_user.data['id']
+        }
+        self.auth = self.client.credentials(HTTP_AUTHORIZATION='JWT {}'.format(
+            self.created_user.data['token']))
+        url = reverse('create_project')
+        self.new_project = self.client.post(url, data=json.dumps(
+            self.project_payload), content_type="application/json")
+
+    def test_successsful_delete_project(self):
+        project_url = reverse('update_get_delete_project', kwargs={
+            'pk': self.new_project.data['id']
+        })
+        response = self.client.delete(project_url)
+        self.assertEqual(response.status_code, 204)
+
+    def test_invalid_delete_project(self):
+        project_url = reverse('update_get_delete_project', kwargs={
+            'pk': 2345
+        })
+        response = self.client.delete(project_url)
+        self.assertEqual(response.status_code, 404)
+
+
+class CreateSkillSetView(APITestCase):
+
+    def setUp(self):
+        self.user_credentials = dict(
+            username="johnchuks21",
+            first_name="john",
+            last_name="ohia",
+            email="johnc@gmail.com",
+            password="kibana"
+        )
+        self.created_user = create_user(self.user_credentials)
+        self.skill_payload = dict(title="AWS EC2")
+
+        self.client.credentials(HTTP_AUTHORIZATION='JWT {}'.format(
+            self.created_user.data['token']))
+
+    def test_successful_create_skillset(self):
+        skill_url = reverse('create_skill')
+        response = self.client.post(skill_url, data=json.dumps(self.skill_payload),
+                                    content_type='application/json')
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.data['title'], 'AWS EC2')
+
+    def test_invalid_create_skillset(self):
+        skill_url = reverse('create_skill')
+        response = self.client.post(skill_url, data=json.dumps(
+            dict(title="")), content_type="application/json")
+        self.assertEqual(response.status_code, 400)
+
+
+class UpdateSkillSetView(APITestCase):
+
+    def setUp(self):
+        self.user_credentials = dict(
+            username="johnchuks21",
+            first_name="john",
+            last_name="ohia",
+            email="johnc@gmail.com",
+            password="kibana"
+        )
+        self.created_user = create_user(self.user_credentials)
+        self.skill_payload = dict(title="AWS EC2")
+
+        self.client.credentials(HTTP_AUTHORIZATION='JWT {}'.format(
+            self.created_user.data['token']))
+
+        create_skill_url = reverse('create_skill')
+        self.new_skill = self.client.post(create_skill_url, data=json.dumps(
+            self.skill_payload), content_type='application/json')
+        self.update_skill_payload = dict(title="python django")
+
+    def test_update_skill(self):
+        skill_url = reverse('update_get_delete_skill', kwargs={
+            'pk': self.new_skill.data['id']
+        })
+
+        response = self.client.put(skill_url, data=json.dumps(
+            self.update_skill_payload), content_type="application/json")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['title'], "python django")
+
+
+class GetSkillSetView(APITestCase):
+    def setUp(self):
+        self.user_credentials = dict(
+            username="johnchuks21",
+            first_name="john",
+            last_name="ohia",
+            email="johnc@gmail.com",
+            password="kibana"
+        )
+        self.created_user = create_user(self.user_credentials)
+        self.skill_payload = dict(title="AWS EC2")
+
+        self.client.credentials(HTTP_AUTHORIZATION='JWT {}'.format(
+            self.created_user.data['token']))
+
+        create_skill_url = reverse('create_skill')
+        self.new_skill = self.client.post(create_skill_url, data=json.dumps(
+            self.skill_payload), content_type='application/json')
+
+    def test_get_skill_by_id(self):
+        skill_url = reverse('update_get_delete_skill', kwargs={
+            'pk': self.new_skill.data['id']
+        })
+        response = self.client.get(skill_url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['title'], 'AWS EC2')
+
+
+class DeleteSkillSetView(APITestCase):
+    def setUp(self):
+        self.user_credentials = dict(
+            username="johnchuks21",
+            first_name="john",
+            last_name="ohia",
+            email="johnc@gmail.com",
+            password="kibana"
+        )
+        self.created_user = create_user(self.user_credentials)
+        self.skill_payload = dict(title="AWS EC2")
+
+        self.client.credentials(HTTP_AUTHORIZATION='JWT {}'.format(
+            self.created_user.data['token']))
+
+        create_skill_url = reverse('create_skill')
+        self.new_skill = self.client.post(create_skill_url, data=json.dumps(
+            self.skill_payload), content_type='application/json')
+
+    def test_delete_skill_by_id(self):
+        skill_url = reverse('update_get_delete_skill', kwargs={
+            'pk': self.new_skill.data['id']
+        })
+        response = self.client.delete(skill_url)
+        self.assertEqual(response.status_code, 204)
+
+
