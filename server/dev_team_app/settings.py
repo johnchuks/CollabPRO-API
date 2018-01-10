@@ -125,9 +125,20 @@ DATABASES = {
         'NAME': os.environ.get('DBDEV'),
         'USER': os.environ.get('DBUSER'),
         'HOST': '127.0.0.1',
-        'PORT': os.environ.get('DBPORT')
+        'PORT': ''
     }
 }
+
+if 'TRAVIS' in os.environ:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.environ.get('DBDEV'),
+            'USER': os.environ.get('DBUSER'),
+            'HOST': '127.0.0.1',
+            'PORT': os.environ.get('DBPORT')
+        }
+    }
 
 
 # Password validation

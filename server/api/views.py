@@ -176,6 +176,10 @@ class ProjectDetailsView(APIView):
     def get(self, request, pk, format=None):
         """ Gets a project """
         project = self.get_project_by_id(pk)
+        credential_check = check_auth_user_credentials(request.user.id, project.author.id)
+        if not credential_check:
+            response_object = dict(message="You are not authorized to access the content")
+            return Response(response_object, status=status.HTTP_403_FORBIDDEN)
         if not project:
             return Response(status=status.HTTP_404_NOT_FOUND)
         serializer = ProjectSerializer(project)
@@ -200,6 +204,12 @@ class ProjectDetailsView(APIView):
     def delete(self, request, pk, format=None):
         """ Deletes a project """
         project = self.get_project_by_id(pk=pk)
+        credential_check = check_auth_user_credentials(
+            request.user.id, project.author.id
+        )
+        if not credential_check:
+            response_object = dict(message="You are not authorized to delete this content")
+            return Response(response_object, status.HTTP_403_FORBIDDEN)
         if not project:
             return Response(status=status.HTTP_404_NOT_FOUND)
         project.delete()

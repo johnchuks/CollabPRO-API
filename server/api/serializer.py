@@ -32,6 +32,7 @@ class LoginSerializer(serializers.ModelSerializer):
 class SkillSetSerializer(serializers.ModelSerializer):
     """ Serializer maps the skillset model into a json format """
     id = serializers.IntegerField(source='pk', read_only=True)
+    title = serializers.CharField(required=True, allow_blank=False)
 
     def perform_create(self, validated_data):
         skill_set = SkillSet.objects.create(**validated_data)
