@@ -122,8 +122,9 @@ WSGI_APPLICATION = 'dev_team_app.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.environ.get('DBDEV'),
-        'USER': os.environ.get('DBUSER'),
+        'NAME': 'travisci',
+        'USER': 'postgres',
+        'PASSWORD': '',
         'HOST': '127.0.0.1',
         'PORT': ''
     }
