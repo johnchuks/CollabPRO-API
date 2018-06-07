@@ -13,7 +13,6 @@ before_install:
   - export BUILD_ON_TRAVIS=true
 install:
   - pip install -r requirements.txt
-  - pip install django==$DJANGO --quiet
   - pip install psycopg2 --quiet
 
 before_script:
