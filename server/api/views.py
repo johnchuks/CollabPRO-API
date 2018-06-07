@@ -54,11 +54,11 @@ class LoginView(APIView):
     permission_classes = [permissions.AllowAny]
 
     def validate_username_password(self, request, validated_data):
-        username = validated_data.get('email')
+        email = validated_data.get('email')
         password = validated_data.get('password')
 
-        if username and password:
-            user = authenticate(request, username=username, password=password)
+        if email and password:
+            user = authenticate(request, username=email, password=password)
         else:
             msg = 'Must include a username and password to login'
             raise exceptions.ValidationError(msg)
@@ -67,16 +67,25 @@ class LoginView(APIView):
     def post(self, request):
         """ Login a registered user """
         authenticated_user = self.validate_username_password(request, request.data)
-        if authenticated_user:
-            login(request, authenticated_user)
-            serializer = TokenSerializer(data={
+        if authenticated_user is not None:
+            serializer = LoginSerializer(authenticated_user)
+            token_serializer = TokenSerializer(data={
                 "token": jwt_encode_handler(
                     jwt_payload_handler(authenticated_user)
                 )
             })
-            if serializer.is_valid():
-                return Response(serializer.data, status=status.HTTP_200_OK)
-            return Response(status=status.HTTP_401_UNAUTHORIZED)
+            if token_serializer.is_valid():
+                response = {
+                    'token':token_serializer.data,
+                    'username': serializer.data['username'],
+                    'first_name': serializer.data['first_name'],
+                    'last_name': serializer.data['last_name'],
+                    'email': serializer.data['email']
+                }
+                
+                return Response(response, status=status.HTTP_200_OK)
+
+        return Response(dict(error='Login failed'),status=status.HTTP_401_UNAUTHORIZED)
 
 
 class CreateUserProfileView(generics.ListCreateAPIView):

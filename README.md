@@ -10,6 +10,6 @@ An application for creating future teams and projects.
 - Change your directory `cd CollabPRO-API`
 - Install all dependencies `pip install -r requirements.txt`
 - create a .env file using the `.env-sample`
-- Ensure the secret key to the django app is added to the `.env` file (you can get it from me).
+- Ensure the secret key to the django app is added to the `.env` file (you can use a secret key of your choice).
 - Run tests like so `python manage.py test`.
 - Start the app with `python manage.py runserver`.
