@@ -141,3 +141,7 @@ class TeamSerializer(serializers.ModelSerializer):
         """ Maps the team model to json """
         model = Team
         fields = ('id', 'name', 'members', 'project')
+
+class TokenSerializer(serializers.Serializer):
+
+    token = serializers.CharField(max_length=255)

@@ -16,10 +16,12 @@ Including another URLconf
 from django.conf.urls import url, include
 from django.contrib import admin
 from api import views
+from rest_framework_jwt.views import obtain_jwt_token
 
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
+    url(r'^api-token-auth/', obtain_jwt_token, name="create-token"),
     url(r'^api/', include('api.urls')),
     url(r'^api/social/', include('social_django.urls', namespace='social')),
 ]

@@ -7,6 +7,7 @@ from django.utils.deprecation import MiddlewareMixin
 
 
 def auth_middleware(request):
+    
     user = None
     try:
         user_jwt = JSONWebTokenAuthentication().authenticate(Request(request))
@@ -19,6 +20,5 @@ def auth_middleware(request):
 
 class JWTAuthenticationMiddleware(MiddlewareMixin):
     """ Middleware for authenticating JSON web token in Authorize Header """
-
     def process_request(self, request):
         request.user = SimpleLazyObject(lambda: auth_middleware(request))

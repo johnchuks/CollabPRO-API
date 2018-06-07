@@ -10,17 +10,22 @@ from django.http import HttpResponse
 from django.contrib.auth.models import User
 from rest_framework import status
 from django.http import Http404
-from django.contrib.auth import authenticate
+from django.contrib.auth import authenticate, login
 from rest_framework.exceptions import ValidationError
 from rest_framework import exceptions
+from rest_framework_jwt.settings import api_settings
+from rest_framework.test import APIClient
 from rest_framework.response import Response
 from .serializer import UserProfileSerializer, SkillSetSerializer
-from .serializer import UserSerializer, ProjectSerializer, TeamSerializer, LoginSerializer
+from .serializer import UserSerializer, ProjectSerializer, TeamSerializer, LoginSerializer, TokenSerializer
 from .models import UserProfile, SkillSet, Project, Team
 from api.utils.generate_jwt_token import generate_jwt_token
 from api.utils.service import check_auth_user_credentials
 
 # Create your views here.
+
+jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER
+jwt_encode_handler = api_settings.JWT_ENCODE_HANDLER
 
 
 class CreateUserView(APIView):
@@ -45,41 +50,38 @@ class CreateUserView(APIView):
 
 
 class LoginView(APIView):
-    """ Persist a username and password during login for authentication """
+    """ Persist a username and password for authentication """
     permission_classes = [permissions.AllowAny]
 
-    def validate_username_password(self, validated_data):
-        username = validated_data.get('username')
+    def validate_username_password(self, request, validated_data):
+        username = validated_data.get('email')
         password = validated_data.get('password')
 
         if username and password:
-            user = authenticate(username=username, password=password)
+            user = authenticate(request, username=username, password=password)
         else:
-            msg = 'Must include an email and password to login'
+            msg = 'Must include a username and password to login'
             raise exceptions.ValidationError(msg)
         return user
 
     def post(self, request):
         """ Login a registered user """
-        authenticated_user = self.validate_username_password(request.data)
+        authenticated_user = self.validate_username_password(request, request.data)
         if authenticated_user:
-            serializer = LoginSerializer(authenticated_user)
-            token = generate_jwt_token(serializer.data)
-            response = {
-                'token': token,
-                'id': serializer.data['id'],
-                'username': serializer.data['username'],
-                'first_name': serializer.data['first_name'],
-                'last_name': serializer.data['last_name'],
-                'email': serializer.data['email']
-            }
-            return Response(response, status=status.HTTP_200_OK)
-        return Response({'error': 'Login failed'}, status=status.HTTP_401_UNAUTHORIZED)
-
+            login(request, authenticated_user)
+            serializer = TokenSerializer(data={
+                "token": jwt_encode_handler(
+                    jwt_payload_handler(authenticated_user)
+                )
+            })
+            if serializer.is_valid():
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
 
 
 class CreateUserProfileView(generics.ListCreateAPIView):
     """ creates a userprofile for an authenticated user """
+    permissions_classes = (permissions.IsAuthenticated,)
     queryset = UserProfile.objects.all()
     serializer_class = UserProfileSerializer
 
@@ -92,7 +94,7 @@ class CreateSkillSetView(generics.ListCreateAPIView):
 
 class CreateProjectView(APIView):
     """ create a new project and get projects"""
-
+    permissions_classes = (permissions.IsAuthenticated,)
     def existing_project(self, title):
         """ Helper function for checking if project exist """
         try:
@@ -123,7 +125,7 @@ class CreateProjectView(APIView):
 
 class CreateTeamView(APIView):
     """ creates a new team gets all teams """
-
+    permissions_classes = (permissions.IsAuthenticated,)
     def existing_team(self, name):
         """ Helper function for checking if a team exist """
         try:
@@ -165,7 +167,7 @@ class SkillSetDetailsView(generics.RetrieveUpdateDestroyAPIView):
 
 class ProjectDetailsView(APIView):
     """ Retrieve, update and delete a project """
-
+    permissions_classes = (permissions.IsAuthenticated,)
     def get_project_by_id(self, pk):
         """ Helper function to get project based on the primary key"""
         try:
@@ -218,7 +220,7 @@ class ProjectDetailsView(APIView):
 
 class TeamDetailsView(APIView):
     """ Retrieve, update, and delete a project """
-
+    permissions_classes = (permissions.IsAuthenticated,)
     def get_team_by_id(self, pk):
         """ Helper function to get project based on the primary key"""
         try:
