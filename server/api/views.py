@@ -18,7 +18,7 @@ from rest_framework.test import APIClient
 from rest_framework.response import Response
 from .serializer import UserProfileSerializer, SkillSetSerializer
 from .serializer import UserSerializer, ProjectSerializer, TeamSerializer, LoginSerializer, TokenSerializer
-from .models import UserProfile, SkillSet, Project, Team
+from .models import UserProfile, SkillSet, Project, Team, get_user_from_object
 from api.utils.generate_jwt_token import generate_jwt_token
 from api.utils.service import check_auth_user_credentials
 
@@ -36,16 +36,22 @@ class CreateUserView(APIView):
         serializer = UserSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            token = generate_jwt_token(serializer.data)
-            response = {
-                'token': token,
-                'id': serializer.data['id'],
-                'username': serializer.data['username'],
-                'first_name': serializer.data['first_name'],
-                'last_name': serializer.data['last_name'],
-                'email': serializer.data['email']
-            }
-            return Response(response, status=status.HTTP_201_CREATED)
+            user_object = get_user_from_object(serializer.data['id'])
+            token_serializer = TokenSerializer(data={
+                "token": jwt_encode_handler(
+                    jwt_payload_handler(user_object)
+                )
+                })
+            if token_serializer.is_valid():
+                response = {
+                    'token': token_serializer.data['token'],
+                    'id': serializer.data['id'],
+                    'username': serializer.data['username'],
+                    'first_name': serializer.data['first_name'],
+                    'last_name': serializer.data['last_name'],
+                    'email': serializer.data['email']
+                }
+                return Response(response, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 

@@ -5,8 +5,7 @@ from .models import UserProfile, SkillSet, Project, Team
 
 class UserSerializer(serializers.ModelSerializer):
     """ Serializer to map user model to json format """
-    # projects = serializers.PrimaryKeyRelatedField(many=True, queryset=Project.objects.all())
-
+    
     def create(self, validated_data):
         """ Create user upon signup """
         user = User.objects.create(**validated_data)
@@ -17,7 +16,7 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('id', 'username', 'first_name',
-                  'last_name', 'email', 'password')
+                  'last_name', 'password', 'email')
 
 
 class LoginSerializer(serializers.ModelSerializer):

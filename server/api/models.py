@@ -42,3 +42,9 @@ class Team(models.Model):
 
     def __str__(self):
         return self.name
+
+def get_user_from_object(pk):
+    user = User.objects.get(pk=pk)
+    if not user:
+        return 'User not found'
+    return user
