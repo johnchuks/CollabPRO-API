@@ -162,7 +162,6 @@ elif os.environ.get('ENV') == 'production':
     DATABASES['default'] = dj_database_url.config(default=os.environ.get('DATABASE_URL'))
 
 else:
-    print( os.environ.get('DBDEV'), ' i am here right now')
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql_psycopg2',
