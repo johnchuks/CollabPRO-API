@@ -11,6 +11,7 @@ import os
 
 from django.core.wsgi import get_wsgi_application
 
+print('we global now nnnnnnnnnnnn')
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "dev_team_app.settings")
 
 application = get_wsgi_application()

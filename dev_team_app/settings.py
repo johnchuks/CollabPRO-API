@@ -13,9 +13,10 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
 import os
 from datetime import timedelta
 import dotenv
+import dj_database_url
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 
 # Quick-start development settings - unsuitable for production
@@ -156,13 +157,19 @@ if os.environ.get('BUILD_ON_TRAVIS', None):
             'PORT': ''
         }
     }
+elif os.environ.get('ENV') == 'production':
+    DATABASES={}
+    DATABASES['default'] = dj_database_url.config(default=os.environ.get('DATABASE_URL'))
+
 else:
+    print( os.environ.get('DBDEV'), ' i am here right now')
     DATABASES = {
         'default': {
-            'ENGINE': 'django.db.backends.postgresql',
+            'ENGINE': 'django.db.backends.postgresql_psycopg2',
             'NAME': os.environ.get('DBDEV'),
             'USER': os.environ.get('DBUSER'),
-            'HOST': '127.0.0.1',
+            'PASSWORD': os.environ.get('DBPASS'),
+            'HOST': os.environ.get('DBHOST'),
             'PORT': os.environ.get('DBPORT')
         }
     }

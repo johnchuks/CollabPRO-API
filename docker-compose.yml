@@ -1,0 +1,30 @@
+version: '3'
+
+services:
+  db:
+    image: postgres
+    container_name: collabpro_db
+    restart: always
+    ports: 
+      - 8001:5432
+    env_file:
+      - .env
+  web:
+    container_name: collabpro_web
+    labels:
+      com.example.service: "web"
+      com.example.description: "Use for the main web process"
+    build: 
+      context: ./docker/server
+      dockerfile: Dockerfile
+    command: /start.sh
+    env_file:
+      - .env
+    volumes:
+      - .:/collabpro
+    depends_on:
+      - db
+    ports:
+      - "9000:9000"
+    depends_on:
+      - db
