@@ -5,6 +5,7 @@
 node_modules/
 assets/
 static/
+.idea/
+collab/
 venv/
-
 

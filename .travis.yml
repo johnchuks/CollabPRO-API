@@ -1,6 +1,6 @@
 language: python
 python: 
-  - "3.6"
+  - "3.6.2"
 
 services: postgresql
 
@@ -13,14 +13,13 @@ before_install:
   - export BUILD_ON_TRAVIS=true
 install:
   - pip install -r requirements.txt
-  - pip install django==$DJANGO --quiet
   - pip install psycopg2 --quiet
 
 before_script:
   - psql -c "CREATE DATABASE travisdb;" -U postgres
 
 script:
-  - sh build_dev_team.sh
+  - sh ./scripts/build_dev_team.sh
 
 
 

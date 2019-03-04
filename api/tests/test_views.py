@@ -84,12 +84,12 @@ class LoginInUser(TestCase):
         self.user = User.objects.create_user(**self.user_credentials)
 
         self.valid_login_credentials = {
-            'username': 'johnchuks21',
+            'email': 'johnc@gmail.com',
             'password': 'kibana'
         }
 
         self.invalid_login_credentials = {
-            'username': 'johnchuks34',
+            'email': 'johnchuks34@gmail.com',
             'password': 'password'
         }
 
@@ -98,9 +98,8 @@ class LoginInUser(TestCase):
         url = reverse('login_user')
         response = client.post(url,
                                data=json.dumps(self.valid_login_credentials),
-                               content_type='application/json')
+                                content_type='application/json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(self.user.username, response.data['username'])
         self.assertEqual(self.user.first_name, response.data['first_name'])
         self.assertEqual(self.user.last_name, response.data['last_name'])
         self.assertEqual(self.user.email, response.data['email'])
