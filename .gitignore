@@ -7,3 +7,5 @@ assets/
 static/
 .idea/
 collab/
+venv/
+
