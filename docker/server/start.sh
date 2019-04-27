@@ -3,8 +3,10 @@ set -e
 set -o pipefail # if any code doesn't return 0, exit the script
 
 function run_migration() {
+  python manage.py flush --no-input
   python manage.py makemigrations
   python manage.py migrate
+  python manage.py collectstatic --no-input
 }
 
 run_migration
